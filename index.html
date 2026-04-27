@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>公众号排版器</title>
 
   <!-- Google tag (gtag.js) -->
@@ -1551,6 +1554,417 @@
       }
     }
   </style>
+
+  <!-- AI 功能样式 -->
+  <style>
+    /* 标签导航 */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #fff;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--color-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .tab-btn.active {
+      background: var(--color-accent);
+      color: white;
+    }
+
+    /* AI 面板 */
+    .ai-panel {
+      grid-column: 1 / -1;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .ai-panel-content {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .ai-panel-content h2 {
+      margin: 0 0 24px 0;
+      font-size: 24px;
+      color: var(--color-primary);
+    }
+
+    .ai-form-group {
+      margin-bottom: 20px;
+    }
+
+    .ai-form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--color-primary);
+    }
+
+    .ai-form-group select,
+    .ai-form-group input[type="text"],
+    .ai-form-group input[type="password"],
+    .ai-form-group input[type="number"],
+    .ai-form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .ai-form-group select:focus,
+    .ai-form-group input:focus,
+    .ai-form-group textarea:focus {
+      outline: none;
+      border-color: var(--color-accent);
+    }
+
+    .ai-form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .ai-form-group input[type="range"] {
+      width: 100%;
+    }
+
+    .ai-range-inputs {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ai-range-inputs input {
+      width: 120px;
+    }
+
+    .ai-key-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-key-input input {
+      flex: 1;
+    }
+
+    .ai-key-input button {
+      padding: 8px 12px;
+      border: 1px solid var(--color-border);
+      background: #f5f5f5;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .ai-generate-btn,
+    .ai-test-btn,
+    .ai-save-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ai-generate-btn {
+      background: var(--color-accent);
+      color: white;
+      width: 100%;
+    }
+
+    .ai-generate-btn:hover:not(:disabled) {
+      background: #0052cc;
+    }
+
+    .ai-generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ai-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .ai-test-btn {
+      background: #f5f5f5;
+      color: var(--color-primary);
+      flex: 1;
+    }
+
+    .ai-save-btn {
+      background: #10b981;
+      color: white;
+      flex: 1;
+    }
+
+    .ai-result {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .ai-result h3 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+    }
+
+    .ai-result-content {
+      background: #f9f9f9;
+      padding: 16px;
+      border-radius: 8px;
+      line-height: 1.8;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .ai-result-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .ai-result-actions button {
+      padding: 8px 16px;
+      border: 1px solid var(--color-border);
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ai-result-actions button:hover {
+      background: #f5f5f5;
+    }
+
+    @media (max-width: 768px) {
+      .ai-panel {
+        padding: 20px 16px;
+      }
+
+      .ai-panel-content {
+        padding: 20px;
+      }
+
+      .ai-range-inputs input {
+        width: 80px;
+      }
+    }
+
+    /* ===== AI 自定义输入框样式 ===== */
+    .ai-custom-input {
+      width: 100%;
+      padding: 10px 12px !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 6px !important;
+      font-size: 14px !important;
+      margin-top: 8px !important;
+      transition: border-color 0.2s !important;
+    }
+
+    .ai-custom-input:focus {
+      outline: none !important;
+      border-color: var(--color-accent) !important;
+    }
+
+    /* 提示文字 */
+    .ai-hint-text {
+      margin: 4px 0 10px 0;
+      font-size: 12px;
+      color: var(--color-tertiary);
+      line-height: 1.5;
+    }
+
+    /* 文件夹选择器 */
+    .ai-folder-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ai-folder-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 2px dashed var(--color-border);
+      border-radius: 8px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+    }
+
+    .ai-folder-btn:hover {
+      border-color: var(--color-accent);
+      background: #f0f7ff;
+    }
+
+    .ai-folder-btn.selected {
+      border-color: #10b981;
+      border-style: solid;
+      background: #f0fdf4;
+    }
+
+    .folder-btn-icon {
+      font-size: 20px;
+    }
+
+    .folder-btn-text {
+      font-size: 14px;
+      color: var(--color-secondary);
+    }
+
+    .ai-folder-btn.selected .folder-btn-text {
+      color: #059669;
+      font-weight: 500;
+    }
+
+    .ai-clear-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: white;
+      color: var(--color-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .ai-clear-btn:hover {
+      background: #fef2f2;
+      border-color: #ef4444;
+      color: #dc2626;
+    }
+
+    /* 图片预览网格 */
+    .ai-image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 8px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .ai-image-preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--color-light-border);
+    }
+
+    .ai-image-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-preview-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2px 4px;
+      font-size: 9px;
+      color: white;
+      background: rgba(0,0,0,0.55);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    }
+
+    /* 主操作按钮高亮 */
+    .ai-action-primary {
+      background: var(--color-accent) !important;
+      color: white !important;
+      border-color: var(--color-accent) !important;
+    }
+
+    .ai-action-primary:hover {
+      background: #0052cc !important;
+    }
+
+    /* ===== 模型选择器样式 ===== */
+    .model-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .fetch-models-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: linear-gradient(135deg, #f8f9fa, #eef1f5);
+      color: var(--color-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .fetch-models-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #e8f0fe, #d4e4fc);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    .fetch-models-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .model-select {
+      width: 100%;
+      padding: 10px 12px !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 6px !important;
+      font-size: 14px !important;
+      transition: border-color 0.2s !important;
+      background: white;
+    }
+
+    .model-select:focus {
+      outline: none !important;
+      border-color: var(--color-accent) !important;
+    }
+
+    .model-select-fallback {
+      background: #fafafa;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
@@ -1566,10 +1980,31 @@
         <span class="creator-info">Created by <a href="https://huasheng.ai" target="_blank" rel="noopener noreferrer">花生</a></span>
       </div>
       <div class="header-actions">
-        <nav class="header-links">
-          <a class="header-link" href="https://www.bookai.top" target="_blank" rel="noopener noreferrer">BookAI 主站</a>
-          <a class="header-link primary" href="https://nf.video/o9jj0s" target="_blank" rel="noopener noreferrer">AI产品购买</a>
+        <!-- 标签导航 -->
+        <nav class="tab-nav" style="border-bottom: none; padding: 0;">
+          <button 
+            class="tab-btn" 
+            :class="{ active: currentTab === 'editor' }" 
+            @click="currentTab = 'editor'"
+          >
+            📝 编辑器
+          </button>
+          <button 
+            class="tab-btn" 
+            :class="{ active: currentTab === 'ai-generate' }" 
+            @click="currentTab = 'ai-generate'"
+          >
+            ✨ AI 生成
+          </button>
+          <button 
+            class="tab-btn" 
+            :class="{ active: currentTab === 'ai-settings' }" 
+            @click="currentTab = 'ai-settings'"
+          >
+            ⚙️ 设置
+          </button>
         </nav>
+        <!-- GitHub 链接 -->
         <a href="https://github.com/alchaincyf/huasheng_editor"
            target="_blank"
            rel="noopener noreferrer"
@@ -1582,8 +2017,10 @@
       </div>
     </header>
 
-    <!-- 样式选择区 - 横向滚动 -->
-    <section class="styles-section">
+    <!-- 标签导航已移至顶部 header 右侧 -->
+
+    <!-- 样式选择区 - 仅编辑器标签显示 -->
+    <section class="styles-section" v-if="currentTab === 'editor'">
       <div class="styles-container">
         <div class="styles-label">选择样式</div>
         <div class="styles-scroll-wrapper">
@@ -1624,6 +2061,7 @@
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 编辑器面板 -->
+      <template v-if="currentTab === 'editor'">
       <div class="editor-panel">
         <div class="markdown-input-container">
           <textarea
@@ -1674,9 +2112,300 @@
           </div>
         </div>
       </div>
+      </template>
+
+      <!-- AI 生成面板 -->
+      <template v-if="currentTab === 'ai-generate'">
+      <div class="ai-panel">
+        <div class="ai-panel-content">
+          <h2>✨ AI 文案生成</h2>
+          
+          <!-- 文案类型：预设选项 + 自定义输入 -->
+          <div class="ai-form-group">
+            <label>文案类型</label>
+            <select v-model="aiGenerateParams.type" @change="aiGenerateParams.customType = ''">
+              <option value="product">产品介绍</option>
+              <option value="brand">品牌宣传</option>
+              <option value="news">新闻资讯</option>
+              <option value="activity">活动推广</option>
+              <option value="event">活动报道/回顾</option>
+              <option value="tutorial">教程/指南</option>
+              <option value="review">测评/体验</option>
+              <option value="story">情感故事</option>
+              <option value="opinion">观点评论</option>
+              <option value="interview">人物专访</option>
+              <option value="list">盘点/榜单</option>
+              <option value="faq">问答/FAQ</option>
+              <option value="custom">📝 自定义...</option>
+            </select>
+            <input 
+              v-if="aiGenerateParams.type === 'custom'"
+              type="text" 
+              v-model="aiGenerateParams.customType" 
+              placeholder="请输入自定义文案类型，如：节日祝福、招聘启事..."
+              class="ai-custom-input"
+            >
+          </div>
+
+          <!-- 文案风格：预设选项 + 自定义输入 -->
+          <div class="ai-form-group">
+            <label>文案风格</label>
+            <select v-model="aiGenerateParams.style" @change="aiGenerateParams.customStyle = ''">
+              <option value="professional">专业严谨</option>
+              <option value="casual">轻松活泼</option>
+              <option value="artistic">文艺清新</option>
+              <option value="humorous">幽默风趣</option>
+              <option value="simple">简约大方</option>
+              <option value="warm">温暖治愈</option>
+              <option value="urgent">紧迫感/促销</option>
+              <option value="academic">学术/深度</option>
+              <option value="storytelling">故事化叙事</option>
+              <option value="conversational">对话式/口语化</option>
+              <option value="custom">🎨 自定义...</option>
+            </select>
+            <input 
+              v-if="aiGenerateParams.style === 'custom'"
+              type="text" 
+              v-model="aiGenerateParams.customStyle" 
+              placeholder="请输入自定义风格，如：古风雅致、二次元..."
+              class="ai-custom-input"
+            >
+          </div>
+
+          <!-- 字数范围 -->
+          <div class="ai-form-group">
+            <label>字数范围</label>
+            <div class="ai-range-inputs">
+              <input type="number" v-model.number="aiGenerateParams.minWords" placeholder="最少" min="100">
+              <span>~</span>
+              <input type="number" v-model.number="aiGenerateParams.maxWords" placeholder="最多" max="10000">
+            </div>
+          </div>
+
+          <!-- 图片文件夹选择 -->
+          <div class="ai-form-group">
+            <label>📁 选择图片文件夹（可选）</label>
+            <p class="ai-hint-text">选择文件夹后，所有图片将发送给 AI 作为内容依据，并自动排版到正文中。</p>
+            <div class="ai-folder-selector">
+              <label class="ai-folder-btn" :class="{ selected: aiSelectedImages.length > 0 }">
+                <input 
+                  type="file" 
+                  webkitdirectory 
+                  directory 
+                  multiple 
+                  accept="image/*"
+                  @change="handleImageFolderSelect($event)"
+                  style="display: none;"
+                >
+                <span class="folder-btn-icon">📂</span>
+                <span class="folder-btn-text">{{ aiSelectedImages.length > 0 ? `已选择 ${aiSelectedImages.length} 张图片` : '点击选择图片文件夹' }}</span>
+              </label>
+              <button 
+                v-if="aiSelectedImages.length > 0" 
+                @click="clearSelectedImages" 
+                class="ai-clear-btn"
+                type="button"
+              >清除</button>
+            </div>
+            <!-- 已选图片预览 -->
+            <div v-if="aiSelectedImages.length > 0" class="ai-image-preview-grid">
+              <div 
+                v-for="(img, idx) in aiSelectedImages" 
+                :key="idx" 
+                class="ai-image-preview-item"
+              >
+                <img :src="img.preview" :alt="img.name" />
+                <span class="image-preview-name" :title="img.name">{{ img.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 自定义要求 -->
+          <div class="ai-form-group">
+            <label>自定义要求（可选）</label>
+            <textarea v-model="aiGenerateParams.customContent" placeholder="输入具体要求，如主题、关键词、特殊格式、目标受众等..."></textarea>
+          </div>
+
+          <!-- 生成按钮 -->
+          <button 
+            class="ai-generate-btn" 
+            @click="generateAIContent" 
+            :disabled="aiGenerating"
+          >
+            {{ aiGenerating ? '⏳ 生成中，请稍候...' : '🚀 开始生成' }}
+          </button>
+
+          <!-- 生成结果 -->
+          <div v-if="aiGeneratedContent" class="ai-result">
+            <h3>生成结果</h3>
+            <div class="ai-result-content" v-html="renderedAIContent"></div>
+            <div class="ai-result-actions">
+              <button @click="copyAIToEditor" class="ai-action-primary">📋 复制到编辑器</button>
+              <button @click="copyAIToClipboard">📑 复制到剪贴板</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </template>
+
+      <!-- AI 设置面板 -->
+      <template v-if="currentTab === 'ai-settings'">
+      <div class="ai-panel">
+        <div class="ai-panel-content">
+          <h2>⚙️ AI 配置</h2>
+          
+          <div class="ai-form-group">
+            <label>API 提供商</label>
+            <select v-model="aiConfig.provider" @change="onProviderChange()">
+              <option value="openai">OpenAI (GPT-4/3.5)</option>
+              <option value="gemini">Google Gemini</option>
+              <option value="claude">Anthropic Claude</option>
+              <option value="local">本地模型 (OpenAI兼容/Ollama)</option>
+            </select>
+          </div>
+
+          <div v-if="aiConfig.provider === 'local'" class="ai-form-group">
+            <label>本地模型格式</label>
+            <select v-model="localFormat" @change="onLocalFormatChange()">
+              <option value="openai">OpenAI 兼容格式 (/v1/chat/completions)</option>
+              <option value="ollama">Ollama 原生格式 (/api/chat)</option>
+            </select>
+            <p class="ai-hint-text" v-if="localFormat === 'openai'">适用于：LM Studio、vLLM、text-generation-webui、one-api 等</p>
+            <p class="ai-hint-text" v-else>适用于：Ollama 原生服务，默认地址 http://localhost:11434</p>
+          </div>
+
+          <div class="ai-form-group">
+            <label>API Key <span v-if="aiConfig.provider === 'local' || localFormat === 'ollama'" style="font-weight:normal;color:#999;">（本地模型可留空）</span></label>
+            <div class="ai-key-input">
+              <input 
+                :type="showApiKey ? 'text' : 'password'" 
+                v-model="aiConfig.apiKey" 
+                :placeholder="(aiConfig.provider === 'local' || localFormat === 'ollama') ? '本地模型通常不需要 API Key' : '输入你的 API Key'"
+              >
+              <button @click="showApiKey = !showApiKey">
+                {{ showApiKey ? '🙈' : '👁️' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="ai-form-group">
+            <label>模型</label>
+            <div class="model-selector">
+              <!-- 获取模型列表按钮 -->
+              <button 
+                class="fetch-models-btn" 
+                @click="fetchModelList()" 
+                :disabled="loadingModels || !canFetchModels"
+                :title="canFetchModels ? '从API获取可用模型列表' : '请先填写必要配置'"
+              >
+                {{ loadingModels ? '⏳ 获取中...' : '🔄 从服务器获取模型列表' }}
+              </button>
+              
+              <!-- 模型下拉列表 -->
+              <select 
+                v-if="availableModels.length > 0" 
+                v-model="aiConfig.model" 
+                @change="customModel = ''"
+                class="model-select"
+              >
+                <option value="" disabled>--- 请选择模型 ---</option>
+                <option v-for="m in availableModels" :key="m.id || m.name" :value="m.id || m.name">
+                  {{ m.id || m.name }}{{ m.owned_by ? ' (' + m.owned_by + ')' : '' }}
+                </option>
+                <option value="__custom__">✏️ 手动输入模型名称...</option>
+              </select>
+              
+              <!-- 无模型列表时的默认提示 -->
+              <select 
+                v-else 
+                v-model="aiConfig.model" 
+                @change="customModel = ''"
+                class="model-select model-select-fallback"
+              >
+                <template v-if="aiConfig.provider === 'openai'">
+                  <option value="gpt-4o">GPT-4o</option>
+                  <option value="gpt-4o-mini">GPT-4o Mini</option>
+                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </template>
+                <template v-else-if="aiConfig.provider === 'gemini'">
+                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                  <option value="gemini-pro">Gemini Pro</option>
+                </template>
+                <template v-else-if="aiConfig.provider === 'claude'">
+                  <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                  <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                </template>
+                <template v-else>
+                  <option value="">-- 请先获取模型列表或手动输入 --</option>
+                </template>
+                <option value="__custom__">✏️ 手动输入模型名称...</option>
+              </select>
+            </div>
+            
+            <!-- 自定义模型名输入框 -->
+            <input 
+              v-if="aiConfig.model === '__custom__' || customModel" 
+              type="text" 
+              v-model="customModel" 
+              @blur="onCustomModelBlur"
+              @keyup.enter="onCustomModelBlur"
+              placeholder="输入模型名称，如: gpt-4-turbo-preview、qwen2.5-72b-instruct..."
+              class="ai-custom-input"
+            >
+            
+            <!-- 已获取的模型数量提示 -->
+            <p v-if="availableModels.length > 0" class="ai-hint-text" style="margin-top:6px;">
+              📋 已获取 {{ availableModels.length }} 个模型，也可选择「手动输入」使用未列出的模型
+            </p>
+          </div>
+
+          <div v-if="aiConfig.provider === 'local'" class="ai-form-group">
+            <label>API 地址</label>
+            <input 
+              type="text" 
+              v-model="aiConfig.baseUrl" 
+              :placeholder="localFormat === 'ollama' ? 'http://localhost:11434' : 'http://localhost:1234/v1'"
+            >
+            <p class="ai-hint-text" v-if="!aiConfig.baseUrl">
+              {{ localFormat === 'ollama' ? 'Ollama 默认地址: http://localhost:11434' : 'OpenAI 兼容默认地址示例: http://localhost:1234/v1' }}
+            </p>
+          </div>
+
+          <div class="ai-form-group">
+            <label>最大输出 Token: {{ aiConfig.maxTokens }}</label>
+            <input 
+              type="range" 
+              v-model.number="aiConfig.maxTokens" 
+              min="256" 
+              max="16384" 
+              step="256"
+            >
+          </div>
+
+          <div class="ai-form-group">
+            <label>Temperature: {{ aiConfig.temperature }}</label>
+            <input 
+              type="range" 
+              v-model.number="aiConfig.temperature" 
+              min="0" 
+              max="2" 
+              step="0.1"
+            >
+          </div>
+
+          <div class="ai-actions">
+            <button class="ai-test-btn" @click="testAIConnection">🔍 测试连接</button>
+            <button class="ai-save-btn" @click="saveAIConfig">💾 保存配置</button>
+          </div>
+        </div>
+      </div>
+      </template>
 
       <!-- 预览面板 -->
-      <div class="preview-panel">
+      <div class="preview-panel" v-if="currentTab === 'editor'">
         <div class="preview-header">
           <div class="preview-title">
             预览
@@ -1865,75 +2594,7 @@
     <!-- 侧边栏遮罩层 -->
     <div class="history-overlay" :class="{ visible: showHistoryPanel }" @click="toggleHistoryPanel"></div>
 
-    <!-- 右下角浮动广告 -->
-    <div v-if="floatingAd.isVisible" class="floating-ad">
-      <!-- 折叠状态 -->
-      <div v-if="!floatingAd.isExpanded" class="floating-ad__collapsed" @click="toggleFloatingAd">
-        <div class="floating-ad__collapsed-content">
-          <span class="floating-ad__collapsed-icon">{{ currentFloatingAd.icon }}</span>
-          <div class="floating-ad__collapsed-text">
-            <span class="floating-ad__collapsed-title">{{ currentFloatingAd.title }}</span>
-            <span class="floating-ad__collapsed-tag" :class="`floating-ad__tag--${currentFloatingAd.tagColor}`">
-              {{ currentFloatingAd.tag }}
-            </span>
-          </div>
-        </div>
-        <button class="floating-ad__close" @click.stop="closeFloatingAd" aria-label="关闭">
-          ×
-        </button>
-      </div>
-
-      <!-- 展开状态 -->
-      <div v-else class="floating-ad__panel">
-        <div class="floating-ad__panel-header">
-          <span class="floating-ad__panel-title">🔥 热门推荐</span>
-          <button class="floating-ad__collapse" @click="toggleFloatingAd" aria-label="收起">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="floating-ad__list">
-          <div
-            v-for="ad in floatingAd.ads"
-            :key="ad.id"
-            class="floating-ad__item"
-            @click="openFloatingAd(ad)"
-          >
-            <span class="floating-ad__icon">{{ ad.icon }}</span>
-            <div class="floating-ad__info">
-              <div class="floating-ad__header">
-                <span class="floating-ad__title">{{ ad.title }}</span>
-                <span class="floating-ad__tag" :class="`floating-ad__tag--${ad.tagColor}`">
-                  {{ ad.tag }}
-                </span>
-              </div>
-              <span class="floating-ad__subtitle">{{ ad.subtitle }}</span>
-              <span v-if="ad.coupon" class="floating-ad__coupon">优惠码: {{ ad.coupon }}</span>
-            </div>
-            <svg class="floating-ad__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </div>
-        </div>
-
-        <button class="floating-ad__close-expanded" @click="closeFloatingAd">
-          暂时不需要
-        </button>
-      </div>
-
-      <!-- 轮播指示器 -->
-      <div v-if="!floatingAd.isExpanded" class="floating-ad__indicators">
-        <span
-          v-for="(ad, idx) in floatingAd.ads"
-          :key="ad.id"
-          class="floating-ad__indicator"
-          :class="{ active: idx === floatingAd.currentIndex }"
-          @click.stop="setFloatingAdIndex(idx)"
-        ></span>
-      </div>
-    </div>
+    <!-- 右下角浮动广告已移除 -->
 
     <!-- Toast 提示 -->
     <div v-if="toast.show" class="toast" :class="toast.type">
@@ -1942,7 +2603,7 @@
   </div>
 
   <!-- 加载脚本 -->
-  <script src="styles.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="styles.js?v=4"></script>
+  <script src="app_v5.js"></script>
 </body>
 </html>
