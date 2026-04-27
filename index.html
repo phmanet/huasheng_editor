@@ -1796,6 +1796,33 @@
       line-height: 1.5;
     }
 
+    /* 图片仅排版开关 */
+    .ai-layout-only-switch {
+      margin: 8px 0;
+      padding: 8px 12px;
+      background: var(--color-secondary);
+      border-radius: 6px;
+      border: 1px solid var(--color-border);
+    }
+
+    .ai-layout-only-switch .switch-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 8px;
+    }
+
+    .ai-layout-only-switch input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .ai-layout-only-switch .switch-text {
+      font-size: 13px;
+      color: var(--color-text);
+    }
+
     /* 文件夹选择器 */
     .ai-folder-selector {
       display: flex;
@@ -2186,6 +2213,13 @@
           <div class="ai-form-group">
             <label>📁 选择图片文件夹（可选）</label>
             <p class="ai-hint-text">选择文件夹后，所有图片将发送给 AI 作为内容依据，并自动排版到正文中。</p>
+            <!-- 图片仅排版开关 -->
+            <div v-if="aiSelectedImages.length > 0" class="ai-layout-only-switch">
+              <label class="switch-label">
+                <input type="checkbox" v-model="aiGenerateParams.imagesForLayoutOnly">
+                <span class="switch-text">📝 图片仅用于排版，不发给 AI（节省 token）</span>
+              </label>
+            </div>
             <div class="ai-folder-selector">
               <label class="ai-folder-btn" :class="{ selected: aiSelectedImages.length > 0 }">
                 <input 

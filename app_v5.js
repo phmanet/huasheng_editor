@@ -980,7 +980,8 @@ const editorApp = createApp({
         customStyle: '',              // 自定义文案风格
         minWords: 500,                 // 最小字数
         maxWords: 1500,                // 最大字数
-        customContent: ''              // 自定义内容
+        customContent: '',             // 自定义内容
+        imagesForLayoutOnly: false     // 图片仅用于排版，不发给 AI
       },
 
       // AI 图片文件夹选择
@@ -3821,49 +3822,57 @@ const markdown = \`![图片](img://\${imageId})\`;
         // 构建提示词
         const prompt = this.buildAIPrompt();
 
-        // 处理图片：如果有选中的图片，转为 base64 发给 AI
-        let messages = [];
+        // 处理图片：如果有选中的图片
         let imageMarkdown = '';  // 用于排版的图片 Markdown
+        const imagesForLayoutOnly = this.aiGenerateParams.imagesForLayoutOnly;
 
         if (this.aiSelectedImages.length > 0) {
-          // 构建多模态消息（带图片）
-          const contentParts = [
-            { type: 'text', text: prompt + '\n\n以下是我提供的参考图片，请根据这些图片的内容来生成文案。每张图片都应该在文章中被引用和描述。' }
-          ];
-
-          // 读取所有图片的 base64
+          // 构建用于排版的图片 markdown（始终需要）
           for (let i = 0; i < this.aiSelectedImages.length; i++) {
             const img = this.aiSelectedImages[i];
-            if (img.base64) {
-              contentParts.push({
-                type: 'image_url',
-                image_url: {
-                  url: img.base64,
-                  detail: 'auto'
-                }
-              });
-            } else if (img.file) {
-              // 如果还没有 base64，尝试读取
-              try {
-                const base64 = await this.readFileAsBase64(img.file);
-                img.base64 = base64;
-                contentParts.push({
-                  type: 'image_url',
-                  image_url: {
-                    url: base64,
-                    detail: 'auto'
-                  }
-                });
-              } catch (e) {
-                console.warn(`读取图片失败: ${img.name}`, e);
-              }
-            }
-
-            // 同时构建用于排版的图片 markdown
             imageMarkdown += `![${img.name}]\n`;
           }
 
-          messages.push({ role: 'user', content: contentParts });
+          if (!imagesForLayoutOnly) {
+            // 发送给 AI 作为参考图片
+            const contentParts = [
+              { type: 'text', text: prompt + '\n\n以下是我提供的参考图片，请根据这些图片的内容来生成文案。每张图片都应该在文章中被引用和描述。' }
+            ];
+
+            // 读取所有图片的 base64
+            for (let i = 0; i < this.aiSelectedImages.length; i++) {
+              const img = this.aiSelectedImages[i];
+              if (img.base64) {
+                contentParts.push({
+                  type: 'image_url',
+                  image_url: {
+                    url: img.base64,
+                    detail: 'auto'
+                  }
+                });
+              } else if (img.file) {
+                // 如果还没有 base64，尝试读取
+                try {
+                  const base64 = await this.readFileAsBase64(img.file);
+                  img.base64 = base64;
+                  contentParts.push({
+                    type: 'image_url',
+                    image_url: {
+                      url: base64,
+                      detail: 'auto'
+                    }
+                  });
+                } catch (e) {
+                  console.warn(`读取图片失败: ${img.name}`, e);
+                }
+              }
+            }
+
+            messages.push({ role: 'user', content: contentParts });
+          } else {
+            // 图片仅用于排版，不发给 AI
+            messages.push({ role: 'user', content: prompt });
+          }
         } else {
           // 纯文本模式
           messages.push({ role: 'user', content: prompt });
