@@ -1285,6 +1285,19 @@ const markdown = \`![图片](img://\${imageId})\`;
       content = content.replace(/^(\s*(?:\d+\.|-|\*)\s+[^:\n]+)\n:\s*(.+?)$/gm, '$1: $2');
       content = content.replace(/^(\s*(?:\d+\.|-|\*)\s+.+?)\n\n\s+(.+?)$/gm, '$1 $2');
 
+      // 修复：markdown-it 对图片紧跟文本时解析异常
+      // 当图片（img标签或 ![](img://xxx) 格式）紧跟在文本后面时，
+      // markdown-it 可能把部分文本误解析到图片的 alt 属性中
+      // 解决方案：在图片前后添加空行，确保图片在独立的段落
+      
+      // 处理 ![...](img://xxx) 格式：在前面加空行
+      content = content.replace(/\n(!\[[^\]]*\]\(img:\/\/[^)]+\))/g, '\n\n$1')
+      // 处理 ![...](img://xxx) 格式：在后面加空行  
+      content = content.replace(/(!\[[^\]]*\]\(img:\/\/[^)]+\))\n/g, '$1\n\n')
+      // 处理单个图片引用前后没有空行的情况（多种格式）
+      content = content.replace(/([^\n])\n(!\[)/g, '$1\n\n$2')  // 文本后直接跟图片
+      content = content.replace(/(!\])\n([^\n])/g, '$1\n\n$2')  // 图片后直接跟文本
+      
       return content;
     },
 
@@ -3546,6 +3559,10 @@ const markdown = \`![图片](img://\${imageId})\`;
     // 保存 AI 配置
     saveAIConfig() {
       try {
+        // 如果有自定义模型名，先同步到 aiConfig.model
+        if (this.customModel && this.customModel.trim()) {
+          this.aiConfig.model = this.customModel.trim();
+        }
         // API Key 使用 Base64 加密（简单加密，非安全方案）
         const configToSave = { ...this.aiConfig };
         if (configToSave.apiKey) {
@@ -3568,7 +3585,14 @@ const markdown = \`![图片](img://\${imageId})\`;
           if (config.apiKey) {
             config.apiKey = atob(config.apiKey);
           }
+          // 先清空 availableModels，避免 model 不在列表中时条件不触发
+          this.availableModels = this.availableModels || [];
           this.aiConfig = { ...this.aiConfig, ...config };
+          // 如果保存的模型名不在列表中，说明是自定义的，需要恢复 customModel
+          const savedModel = this.aiConfig.model;
+          if (savedModel && !this.availableModels.some(m => (m.id || m.name) === savedModel)) {
+            this.customModel = savedModel;
+          }
         }
       } catch (error) {
         console.error('加载 AI 配置失败:', error);
@@ -3689,6 +3713,7 @@ const markdown = \`![图片](img://\${imageId})\`;
       try {
         // 构建提示词
         const prompt = this.buildAIPrompt();
+        const messages = [];
 
         // 处理图片：如果有选中的图片
         let imageMarkdown = '';  // 用于排版的图片 Markdown
@@ -3820,6 +3845,33 @@ const markdown = \`![图片](img://\${imageId})\`;
         prompt += `具体要求：${customContent}\n\n`;
       }
 
+      // === 新增：图片信息 ===
+      if (this.aiSelectedImages.length > 0) {
+        prompt += `\n【图片资源】\n`;
+        prompt += `你有 ${this.aiSelectedImages.length} 张图片可用，请在文章合适的位置插入这些图片。\n`;
+        prompt += `插入图片的格式：![图片描述](图N)\n`;
+        prompt += `例如：![产品展示图](图1)、![使用场景](图2)\n`;
+        prompt += `注意：必须使用“图1”、“图2”这样的序号格式，不要使用文件名！\n\n`;
+        prompt += `图片列表：\n`;
+        this.aiSelectedImages.forEach((img, index) => {
+          prompt += `- 图${index + 1}：${img.name}\n`;
+        });
+        prompt += `\n注意：\n`;
+        prompt += `1. 根据文章内容在合适的位置插入图片，实现图文混排\n`;
+        prompt += `2. 每张图片都要有简洁的描述文字\n`;
+        prompt += `3. 图片数量不要超过提供的数量\n`;
+        prompt += `4. 如果图片名称包含关键词，优先在相关内容附近插入\n\n`;
+      }
+
+      // === 新增：去AI感指令 ===
+      prompt += '【写作要求】\n';
+      prompt += '1. 文章要有真实感和人情味，避免AI痕迹\n';
+      prompt += '2. 避免使用"首先、其次、最后、综上所述"等AI常用连接词\n';
+      prompt += '3. 避免使用"作为一个人工智能"等元叙述\n';
+      prompt += '4. 用具体细节、真实案例、生活化语言增加可信度\n';
+      prompt += '5. 段落过渡要自然，像真人在对话\n';
+      prompt += '6. 标题要吸引人，避免"XXX的方法"这类模板化标题\n\n';
+
       prompt += '请直接输出文章内容，使用 Markdown 格式。';
 
       return prompt;
@@ -3834,28 +3886,37 @@ const markdown = \`![图片](img://\${imageId})\`;
 
       let finalContent = this.aiGeneratedContent;
 
-      // 如果有选中的图片，将图片上传到 IndexedDB 并插入到内容中
+      // 如果有选中的图片，处理图片占位符
       if (this.aiSelectedImages.length > 0) {
         this.showToast('正在处理图片...', 'info');
-        const imageMarkdowns = [];
 
+        // 先处理转义符：\![ → !
+        finalContent = finalContent.replace(/\\!/g, '!');
+
+        // 解析并替换图片占位符
         for (let i = 0; i < this.aiSelectedImages.length; i++) {
           const img = this.aiSelectedImages[i];
+
+          // 支持两种格式：(图N) 或 (原始文件名)
+          const patterns = [
+            new RegExp(`!\\[([^\\]]*)\\]\\(图${i + 1}\\)`, 'g'),  // ![描述](图1)
+            new RegExp(`!\\[([^\\]]*)\\]\\(${this.escapeRegExp(img.name)}\\)`, 'g')  // ![描述](文件名)
+          ];
+
           try {
             // 压缩并存储图片到 IndexedDB
             const compressedFile = await this.imageCompressor.compress(img.file);
             const imageId = `ai-img-${Date.now()}-${i}`;
             await this.imageStore.saveImage(imageId, compressedFile, img.name);
-            imageMarkdowns.push(`![${img.name}](img://${imageId})`);
+
+            // 替换所有匹配的占位符
+            for (const pattern of patterns) {
+              finalContent = finalContent.replace(pattern, `![$1](img://${imageId})`);
+            }
           } catch (e) {
             console.error(`图片处理失败: ${img.name}`, e);
-            // 失败时用原始文件名作为占位
-            imageMarkdowns.push(`![${img.name}]`);
           }
         }
-
-        // 将图片追加到文案末尾
-        finalContent = this.aiGeneratedContent + '\n\n---\n\n## 📷 配图\n\n' + imageMarkdowns.join('\n');
       }
 
       this.markdownInput = finalContent;
@@ -3864,7 +3925,7 @@ const markdown = \`![图片](img://\${imageId})\`;
       this.$nextTick(() => {
         this.renderMarkdown();
       });
-      this.showToast('✅ 已复制到编辑器（含图片）', 'success');
+      this.showToast('✅ 已复制到编辑器', 'success');
     },
 
     // 复制 AI 内容到剪贴板
@@ -3883,15 +3944,60 @@ const markdown = \`![图片](img://\${imageId})\`;
       }
     },
 
-    // ===== 图片文件夹选择相关方法 =====
+    // 转义正则特殊字符
+    escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    },
+
+    // ===== 图片选择相关方法 =====
+
+    // 处理图片文件选择
+    async handleImageSelect(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const imageFiles = [...this.aiSelectedImages];
+      let addedCount = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.startsWith('image/')) {
+          // 检查是否已存在同名文件
+          const exists = imageFiles.some(f => f.name === file.name && f.file.size === file.size);
+          if (!exists) {
+            try {
+              const preview = await this.readFileAsDataURL(file);
+              imageFiles.push({
+                name: file.name,
+                file: file,
+                preview: preview,
+                base64: null
+              });
+              addedCount++;
+            } catch (e) {
+              console.warn(`预览图片失败: ${file.name}`, e);
+            }
+          }
+        }
+      }
+
+      if (addedCount === 0) {
+        this.showToast('没有新图片可添加（可能已存在）', 'error');
+        return;
+      }
+
+      this.aiSelectedImages = imageFiles;
+      this.showToast(`已添加 ${addedCount} 张图片，共 ${imageFiles.length} 张`, 'success');
+      // 重置 input 以便再次选择同一文件
+      event.target.value = '';
+    },
 
     // 处理图片文件夹选择
     async handleImageFolderSelect(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
 
-      this.aiSelectedImages = [];
-      const imageFiles = [];
+      const imageFiles = [...this.aiSelectedImages];
 
       // 只过滤图片文件
       for (let i = 0; i < files.length; i++) {
@@ -3923,6 +4029,11 @@ const markdown = \`![图片](img://\${imageId})\`;
     // 清除已选图片
     clearSelectedImages() {
       this.aiSelectedImages = [];
+    },
+
+    // 删除单张已选图片
+    removeSelectedImage(index) {
+      this.aiSelectedImages.splice(index, 1);
     },
 
     // 读取文件为 DataURL（用于预览）

@@ -1,0 +1,26 @@
+// 测试 markdown-it 对图片+文本的解析
+const md = window.markdownit({ html: true });
+
+// 测试1: 没有空行（用户的问题格式）
+const test1 = `窗外的蓝花楹开得正好，阳光穿过白纱帘。
+![女孩站在窗前手扶窗帘](img://ai-img-1777387126216-1)
+地板是温热的木质纹理。`;
+
+// 测试2: 有空行（用户手动修复后的格式）
+const test2 = `窗外的蓝花楹开得正好，阳光穿过白纱帘。
+
+![女孩站在窗前手扶窗帘](img://ai-img-1777387126216-1)
+
+地板是温热的木质纹理。`;
+
+console.log('=== 测试1: 没有空行 ===');
+const html1 = md.render(test1);
+console.log(html1);
+
+console.log('\n=== 测试2: 有空行 ===');
+const html2 = md.render(test2);
+console.log(html2);
+
+// 检查两个输出是否相同
+console.log('\n=== 检查 ===');
+console.log('HTML 相同吗？', html1 === html2);

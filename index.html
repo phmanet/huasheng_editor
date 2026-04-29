@@ -42,7 +42,6 @@
   <style>
     :root {
       --color-primary: #000;
-      --color-secondary: #666;
       --color-tertiary: #999;
       --color-accent: #0066FF;
       --color-bg: #FAFAFA;
@@ -1284,8 +1283,6 @@
     .ai-panel {
       grid-column: 1 / -1;
       padding: 40px 20px;
-      max-width: 800px;
-      margin: 0 auto;
       width: 100%;
     }
 
@@ -1294,6 +1291,57 @@
       padding: 32px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .ai-layout-wrapper {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .ai-form-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ai-result-column {
+      flex: 1;
+      min-width: 0;
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ai-result {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .ai-result-placeholder {
+      background: #f9f9f9;
+      border: 2px dashed var(--color-border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #999;
+    }
+
+    .ai-result-placeholder-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .ai-result-placeholder-text {
+      font-size: 14px;
     }
 
     .ai-panel-content h2 {
@@ -1428,15 +1476,22 @@
       background: #f9f9f9;
       padding: 16px;
       border-radius: 8px;
-      line-height: 1.8;
-      max-height: 400px;
+      flex: 1;
       overflow-y: auto;
+      min-height: 0;
+      line-height: 1.8;
+      max-height: none;
     }
 
     .ai-result-actions {
       display: flex;
       gap: 12px;
       margin-top: 16px;
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      padding: 12px 0;
+      z-index: 10;
     }
 
     .ai-result-actions button {
@@ -1464,6 +1519,15 @@
       .ai-range-inputs input {
         width: 80px;
       }
+
+      .ai-layout-wrapper {
+        flex-direction: column;
+      }
+
+      .ai-result-column {
+        position: static;
+        max-height: none;
+      }
     }
 
     /* ===== AI 自定义输入框样式 ===== */
@@ -1475,6 +1539,25 @@
       font-size: 14px !important;
       margin-top: 8px !important;
       transition: border-color 0.2s !important;
+    }
+    .model-clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--color-text-secondary, #999);
+      padding: 2px 4px;
+      line-height: 1;
+    }
+    .model-clear-btn:hover {
+      color: var(--color-danger, #e74c3c);
+    }
+    .model-selector {
+      position: relative;
     }
 
     .ai-custom-input:focus {
@@ -1605,6 +1688,37 @@
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    .ai-image-count {
+      font-size: 13px;
+      color: var(--color-accent);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .ai-image-remove-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 150ms;
+    }
+
+    .ai-image-preview-item:hover .ai-image-remove-btn {
+      opacity: 1;
     }
 
     .image-preview-name {
@@ -1840,11 +1954,14 @@
       <div class="ai-panel">
         <div class="ai-panel-content">
           <h2>✨ AI 文案生成</h2>
-          
-          <!-- 文案类型：预设选项 + 自定义输入 -->
+          <div class="ai-layout-wrapper">
+            <!-- 左侧：表单 -->
+            <div class="ai-form-column">
+              <!-- 文案类型：预设选项 + 自定义输入 -->
           <div class="ai-form-group">
             <label>文案类型</label>
             <select v-model="aiGenerateParams.type" @change="aiGenerateParams.customType = ''">
+              <option value="emotional">情感共鸣</option>
               <option value="product">产品介绍</option>
               <option value="brand">品牌宣传</option>
               <option value="news">新闻资讯</option>
@@ -1857,6 +1974,14 @@
               <option value="interview">人物专访</option>
               <option value="list">盘点/榜单</option>
               <option value="faq">问答/FAQ</option>
+              <option value="knowledge">知识科普</option>
+              <option value="behind-scenes">幕后揭秘</option>
+              <option value="check-in">打卡探店</option>
+              <option value="vlog">Vlog脚本</option>
+              <option value="recruitment">招聘/招募</option>
+              <option value="festival">节日祝福</option>
+              <option value="case-study">案例分析</option>
+              <option value="comparison">对比评测</option>
               <option value="custom">📝 自定义...</option>
             </select>
             <input 
@@ -1872,6 +1997,8 @@
           <div class="ai-form-group">
             <label>文案风格</label>
             <select v-model="aiGenerateParams.style" @change="aiGenerateParams.customStyle = ''">
+              <option value="ancient-classical">古代白话</option>
+              <option value="xianxia">古风修仙</option>
               <option value="professional">专业严谨</option>
               <option value="casual">轻松活泼</option>
               <option value="artistic">文艺清新</option>
@@ -1882,6 +2009,15 @@
               <option value="academic">学术/深度</option>
               <option value="storytelling">故事化叙事</option>
               <option value="conversational">对话式/口语化</option>
+              <option value="trendy">潮流ins风</option>
+              <option value="vintage">复古怀旧</option>
+              <option value="zen">禅意/极简</option>
+              <option value="dramatic">戏剧张力</option>
+              <option value="mysterious">神秘悬疑</option>
+              <option value="heartwarming">暖心催泪</option>
+              <option value="edgy">犀利毒舌</option>
+              <option value="poetic">诗意优美</option>
+              <option value="data-driven">数据支撑型</option>
               <option value="custom">🎨 自定义...</option>
             </select>
             <input 
@@ -1903,10 +2039,10 @@
             </div>
           </div>
 
-          <!-- 图片文件夹选择 -->
+          <!-- 图片选择 -->
           <div class="ai-form-group">
-            <label>📁 选择图片文件夹（可选）</label>
-            <p class="ai-hint-text">选择文件夹后，所有图片将发送给 AI 作为内容依据，并自动排版到正文中。</p>
+            <label>🖼️ 选择图片（可选）</label>
+            <p class="ai-hint-text">选择图片后，图片将发送给 AI 作为内容依据，并自动排版到正文中。</p>
             <!-- 图片仅排版开关 -->
             <div v-if="aiSelectedImages.length > 0" class="ai-layout-only-switch">
               <label class="switch-label">
@@ -1918,6 +2054,17 @@
               <label class="ai-folder-btn" :class="{ selected: aiSelectedImages.length > 0 }">
                 <input 
                   type="file" 
+                  multiple 
+                  accept="image/*"
+                  @change="handleImageSelect($event)"
+                  style="display: none;"
+                >
+                <span class="folder-btn-icon">🖼️</span>
+                <span class="folder-btn-text">选择图片</span>
+              </label>
+              <label class="ai-folder-btn">
+                <input 
+                  type="file" 
                   webkitdirectory 
                   directory 
                   multiple 
@@ -1926,14 +2073,17 @@
                   style="display: none;"
                 >
                 <span class="folder-btn-icon">📂</span>
-                <span class="folder-btn-text">{{ aiSelectedImages.length > 0 ? `已选择 ${aiSelectedImages.length} 张图片` : '点击选择图片文件夹' }}</span>
+                <span class="folder-btn-text">选择图片文件夹</span>
               </label>
               <button 
                 v-if="aiSelectedImages.length > 0" 
                 @click="clearSelectedImages" 
                 class="ai-clear-btn"
                 type="button"
-              >清除</button>
+              >清除全部</button>
+            </div>
+            <div v-if="aiSelectedImages.length > 0" class="ai-image-count">
+              已选择 {{ aiSelectedImages.length }} 张图片
             </div>
             <!-- 已选图片预览 -->
             <div v-if="aiSelectedImages.length > 0" class="ai-image-preview-grid">
@@ -1943,6 +2093,7 @@
                 class="ai-image-preview-item"
               >
                 <img :src="img.preview" :alt="img.name" />
+                <button class="ai-image-remove-btn" @click="removeSelectedImage(idx)" type="button" title="移除此图片">&times;</button>
                 <span class="image-preview-name" :title="img.name">{{ img.name }}</span>
               </div>
             </div>
@@ -1962,9 +2113,10 @@
           >
             {{ aiGenerating ? '⏳ 生成中，请稍候...' : '🚀 开始生成' }}
           </button>
-
-          <!-- 生成结果 -->
-          <div v-if="aiGeneratedContent" class="ai-result">
+            </div>
+            <!-- 右侧：生成结果 -->
+            <div class="ai-result-column">
+              <div v-if="aiGeneratedContent" class="ai-result">
             <h3>生成结果</h3>
             <div class="ai-result-content" v-html="renderedAIContent"></div>
             <div class="ai-result-actions">
@@ -1972,9 +2124,17 @@
               <button @click="copyAIToClipboard">📑 复制到剪贴板</button>
             </div>
           </div>
+          <div v-else class="ai-result-placeholder">
+            <div class="ai-result-placeholder-icon">📝</div>
+            <div class="ai-result-placeholder-text">生成结果将显示在这里</div>
+          </div>
+            </div>
+          </div>
         </div>
       </div>
-      </template>
+    </div>
+  </div>
+  </template>
 
       <!-- AI 设置面板 -->
       <template v-if="currentTab === 'ai-settings'">
@@ -2029,64 +2189,46 @@
                 {{ loadingModels ? '⏳ 获取中...' : '🔄 从服务器获取模型列表' }}
               </button>
               
-              <!-- 模型下拉列表 -->
-              <select 
-                v-if="availableModels.length > 0" 
-                v-model="aiConfig.model" 
-                @change="customModel = ''"
+              <!-- 可编辑模型选择（支持从列表选择或直接输入） -->
+              <input 
+                type="text" 
+                list="model-datalist" 
+                v-model="aiConfig.model"
+                @input="customModel = ''"
+                placeholder="选择或输入模型名称..."
                 class="model-select"
               >
-                <option value="" disabled>--- 请选择模型 ---</option>
+              <datalist id="model-datalist">
+                <!-- 默认模型列表（未获取远程列表时） -->
+                <template v-if="availableModels.length === 0">
+                  <template v-if="aiConfig.provider === 'openai'">
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4o-mini">GPT-4o Mini</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  </template>
+                  <template v-else-if="aiConfig.provider === 'gemini'">
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    <option value="gemini-pro">Gemini Pro</option>
+                  </template>
+                  <template v-else-if="aiConfig.provider === 'claude'">
+                    <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                    <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+                    <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                  </template>
+                </template>
                 <option v-for="m in availableModels" :key="m.id || m.name" :value="m.id || m.name">
-                  {{ m.id || m.name }}{{ m.owned_by ? ' (' + m.owned_by + ')' : '' }}
+                  {{ (m.id || m.name) + (m.owned_by ? ' (' + m.owned_by + ')' : '') }}
                 </option>
-                <option value="__custom__">✏️ 手动输入模型名称...</option>
-              </select>
-              
-              <!-- 无模型列表时的默认提示 -->
-              <select 
-                v-else 
-                v-model="aiConfig.model" 
-                @change="customModel = ''"
-                class="model-select model-select-fallback"
-              >
-                <template v-if="aiConfig.provider === 'openai'">
-                  <option value="gpt-4o">GPT-4o</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                </template>
-                <template v-else-if="aiConfig.provider === 'gemini'">
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                  <option value="gemini-pro">Gemini Pro</option>
-                </template>
-                <template v-else-if="aiConfig.provider === 'claude'">
-                  <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
-                  <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
-                  <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                </template>
-                <template v-else>
-                  <option value="">-- 请先获取模型列表或手动输入 --</option>
-                </template>
-                <option value="__custom__">✏️ 手动输入模型名称...</option>
-              </select>
+              </datalist>
+              <!-- 清除按钮 -->
+              <button v-if="aiConfig.model" @click="aiConfig.model = ''; customModel = ''" class="model-clear-btn" title="清除">✕</button>
             </div>
-            
-            <!-- 自定义模型名输入框 -->
-            <input 
-              v-if="aiConfig.model === '__custom__' || customModel" 
-              type="text" 
-              v-model="customModel" 
-              @blur="onCustomModelBlur"
-              @keyup.enter="onCustomModelBlur"
-              placeholder="输入模型名称，如: gpt-4-turbo-preview、qwen2.5-72b-instruct..."
-              class="ai-custom-input"
-            >
             
             <!-- 已获取的模型数量提示 -->
             <p v-if="availableModels.length > 0" class="ai-hint-text" style="margin-top:6px;">
-              📋 已获取 {{ availableModels.length }} 个模型，也可选择「手动输入」使用未列出的模型
+              📋 已获取 {{ availableModels.length }} 个模型，也可直接输入未列出的模型名称
             </p>
           </div>
 
@@ -2332,6 +2474,6 @@
 
   <!-- 加载脚本 -->
   <script src="styles.js?v=4"></script>
-  <script src="app_v5.js"></script>
+  <script src="app_v5.js?v=14"></script>
 </body>
 </html>
